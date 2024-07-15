@@ -36,13 +36,15 @@ const start = async () => {
         default:
           const result = await getFulldataByTlf(text);
           let dia =
-            (await result.date_dia) === 'null'
-              ? (dia = `\nДата проведения диагнсотики: ${result.date_dia}`)
-              : `\nИнструемнт еще не продиагностирован`;
+            (await result.date_dia) === "null"
+              ? `\nИнструемнт еще не продиагностирован`
+              : `\nДата проведения диагнсотики: ${result.date_dia}`;
+
           let vip =
-            (await result.date_prin) === 'null'
-              ? (vip = `\nДата выполнения ремонта: ${result.date_vipoln}`)
-              : `\nИнструемнт еще в ремонте`;
+            (await result.date_prin) === "null"
+              ? `\nИнструемнт еще в ремонте`
+              : `\nДата выполнения ремонта: ${result.date_vipoln}`;
+
           await bot.sendMessage(
             chatID,
             `🔫 Ваш инструмент: \nСерийный номер ${result.snno_tool}\nКод машины ${result.matno_tool} \nСервисный центр ${result.asc_name} \nВид ремонта ${result.vr}\n
