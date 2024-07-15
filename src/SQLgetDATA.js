@@ -13,7 +13,7 @@ const normalizeTlf = (tlf) => {
 
 const getFulldataByTlf = async (tlf) => {
   const result = await pool.query(
-    `SELECT * FROM gis WHERE cli_telephone = '${normalizeTlf(tlf)}';`
+    `SELECT * FROM gis WHERE cli_telephone = '${normalizeTlf(tlf)}' ORDER BY id DESC;`
   );
   //console.log(await result)
   return result.rows[0];
