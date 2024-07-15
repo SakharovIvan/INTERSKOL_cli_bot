@@ -36,11 +36,11 @@ const start = async () => {
         default:
           const result = await getFulldataByTlf(text);
           let dia =
-            (await result.date_dia) === null
+            (await result.date_dia) === 'null'
               ? (dia = `\nДата проведения диагнсотики: ${result.date_dia}`)
               : `\nИнструемнт еще не продиагностирован`;
           let vip =
-            (await result.date_prin) === null
+            (await result.date_prin) === 'null'
               ? (vip = `\nДата выполнения ремонта: ${result.date_vipoln}`)
               : `\nИнструемнт еще в ремонте`;
           await bot.sendMessage(
