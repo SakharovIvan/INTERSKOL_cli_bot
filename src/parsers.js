@@ -31,17 +31,7 @@ class ASC {
     this.adresASC = adresASC;
     this.tlfASC = tlfASC;
   }
-    setgeocode(adresASC) {
-      gethtml(creategeocode(adresASC))
-      .then((res) => {
-          let position = res.metaDataProperty.GeocoderResponseMetaData.Point.pos;
-          position.split(" ");
-      this.longtitude = longtitude;
-      this.latitude = latitude;
-      }
-      )
 
-  }
 }
 
 const creategeocode = (adres) => {
@@ -50,6 +40,16 @@ const creategeocode = (adres) => {
     '+'
   )}&format=json`;
 };
+
+const getgeocode=(gorod)=> {
+  return gethtml(creategeocode(gorod))
+  .then((res) => {
+      const position = res.data.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos;
+return position.split(" ");
+  }
+  )
+
+}
 
 const getASCList = async (url) => {
   const html = await gethtml(url);
@@ -68,30 +68,32 @@ const getASCList = async (url) => {
       siteascinfo.push(cellInfo);
     }
     let arrayofsiteasc = new ASC(siteascinfo)
-  //  setInterval(() => {
-  //    gethtml(creategeocode(siteascinfo[4]));
-  //  }, 100)
-  //    .then((res) => {
-  //      let position = res.metaDataProperty.GeocoderResponseMetaData.Point.pos;
-  //      position.split(" ");
-  //      siteascinfo.push(position[0], position[1]);
-  //    })
-  //    .then(() => ascArray.push(new ASC(siteascinfo)));
   ascArray.push(arrayofsiteasc)
   }
   return ascArray;
 };
 
+
+
 try {
-  getASCList(urlASC)
-    .then((json) => {
-      console.log(json[4].adresASC)
-      gethtml(creategeocode(json[4].adresASC))
-      .then((res)=>{console.log(res.data.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos)})
+ const adreslist = await getASCList(urlASC)
+ const adreslistgeo = adreslist.map((asc)=>{
+  setInterval(()=>{
+    getgeocode(asc.adresASC)
+    .then((res)=>{
+      asc.longitude = res[0]
+      asc.latitude= res[1]
     })
-    .then((res) => {
-console.log(res)
-    });
+    .then(()=>console.log(asc))
+  },50)
+
+ })
+
+ Promise.all(adreslistgeo)
+ .then((res)=>{
+  console.log(res)
+ })
+
 } catch (error) {
   console.log(error);
 }
