@@ -17,6 +17,15 @@ const msgoption = {
   },
 };
 
+import log from "simple-node-logger";
+
+
+const logger = log.createSimpleLogger({
+  logFilePath: "logger.log",
+  timestampFormat: "YYYY-MM-DD HH:mm:ss.SSS",
+});
+logger.setLevel("info" || "debug");
+
 const sentRepairInfo = async (chatID, result) => {
   let dia =
     (await result.date_dia) === ""
@@ -47,6 +56,7 @@ const start = async () => {
     const chatID = msg.chat.id;
     const username = msg.from.username;
     const time = msg.date;
+    logger.info(`${time}, ${chatID}, ${text}, ${username}`)
     try {
       switch (true) {
         case text === "/start":
@@ -84,6 +94,7 @@ const start = async () => {
           break;
       }
     } catch (err) {
+      logger.info(err)
       console.log(err);
     }
   });
