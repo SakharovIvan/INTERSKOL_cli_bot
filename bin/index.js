@@ -2,6 +2,7 @@ import { token } from "../config.js";
 import TelegramAPI from "node-telegram-bot-api";
 import { getFulldataByTlf, getFulldataBySno } from "../src/SQLgetDATA.js";
 import log from "simple-node-logger";
+import { opros, keyboard } from "../src/tgsurvey.js";
 
 const bot = new TelegramAPI(token, { polling: true });
 const textStart = `Добро пожаловать в телеграм бот ИНТЕРСКОЛ.\nЗдесь Вы можете проверить статус гарантийного ремонта по номеру телефона\nДля того, чтобы найти свой инструмент, введите номер телефона в следующем формате _7 999 999 99 99_`;
@@ -19,9 +20,6 @@ const msgoption = {
   },
 };
 
-
-
-
 const logger = log.createSimpleLogger({
   logFilePath: "logger.log",
   timestampFormat: "YYYY-MM-DD HH:mm:ss.SSS",
@@ -32,7 +30,7 @@ const sentRepairInfo = async (chatID, result) => {
   let dia =
     (await result.date_dia) === ""
       ? `\nИнструемнт еще не продиагностирован`
-      : `\nДата проведения диагнсотики: ${result.date_dia}`;
+      : `\nДата проведения диагностики: ${result.date_dia}`;
   let vip =
     (await result.date_prin) === ""
       ? `\nИнструемнт еще в ремонте`
@@ -51,6 +49,7 @@ const start = async () => {
   bot.setMyCommands([
     { command: "/start", description: "Начальное приветствие" },
     { command: "/map", description: "Найти ближайший АСЦ" },
+    { command: "/survey", description: "Пройти опрос удовлетворенности" },
   ]);
 
   bot.on("message", async (msg) => {
@@ -58,7 +57,7 @@ const start = async () => {
     const chatID = msg.chat.id;
     const username = msg.from.username;
     const time = msg.date;
-    logger.info(`${time}, ${chatID}, ${text}, ${username}`)
+    logger.info(`${time}, ${chatID}, ${text}, ${username}`);
     try {
       switch (true) {
         case text === "/start":
@@ -69,6 +68,11 @@ const start = async () => {
           break;
         case text === "/findbytelephonenumber":
           await bot.sendMessage(chatID, textStart, msgoption);
+          break;
+        case text === "/survey":
+          await bot.sendMessage(chatID, opros[1], {
+            reply_markup: keyboard(0),
+          });
           break;
 
         case tlfFormat.test(text):
@@ -96,9 +100,36 @@ const start = async () => {
           break;
       }
     } catch (err) {
-      logger.info(err)
+      logger.info(err);
       console.log(err);
     }
+    bot.on("callback_query", async (answer) => {
+      const chatID = answer.message.chat.id;
+      try {
+        console.log(answer);
+        switch (answer.data) {
+          case "0":
+            await bot.sendMessage(chatID, opros[2], {
+              reply_markup: keyboard(1),
+            });
+            break;
+          case "1":
+            await bot.sendMessage(chatID, opros[3], {
+              reply_markup: keyboard(2),
+            });
+            break;
+          case "2":
+            await bot.sendMessage(chatID, opros[0], {
+              reply_markup: {
+                remove_keyboard: true,
+              },
+            });
+            break;
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    });
   });
 };
 
