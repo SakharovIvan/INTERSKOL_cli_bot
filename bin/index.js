@@ -2,7 +2,7 @@ import { token } from "../config.js";
 import TelegramAPI from "node-telegram-bot-api";
 import { getFulldataByTlf, getFulldataBySno } from "../src/SQLgetDATA.js";
 import log from "simple-node-logger";
-import { opros, keyboard } from "../src/tgsurvey.js";
+import { opros, keyboard,UserModel } from "../src/tgsurvey.js";
 
 const bot = new TelegramAPI(token, { polling: true });
 const textStart = `Добро пожаловать в телеграм бот ИНТЕРСКОЛ.\nЗдесь Вы можете проверить статус гарантийного ремонта по номеру телефона\nДля того, чтобы найти свой инструмент, введите номер телефона в следующем формате _7 999 999 99 99_`;
@@ -25,6 +25,7 @@ const logger = log.createSimpleLogger({
   timestampFormat: "YYYY-MM-DD HH:mm:ss.SSS",
 });
 logger.setLevel("info" || "debug");
+const cliOpros = []
 
 const sentRepairInfo = async (chatID, result) => {
   let dia =
@@ -45,6 +46,13 @@ const sentRepairInfo = async (chatID, result) => {
   );
 };
 
+const askQuestion =async(chatID)=>{
+  const question = 
+  await bot.sendMessage(chatID, opros[question], {
+    reply_markup: keyboard,
+  });
+}
+
 const start = async () => {
   bot.setMyCommands([
     { command: "/start", description: "Начальное приветствие" },
@@ -57,7 +65,6 @@ const start = async () => {
     const chatID = msg.chat.id;
     const username = msg.from.username;
     const time = msg.date;
-    logger.info(`${time}, ${chatID}, ${text}, ${username}`);
     try {
       switch (true) {
         case text === "/start":
@@ -70,6 +77,8 @@ const start = async () => {
           await bot.sendMessage(chatID, textStart, msgoption);
           break;
         case text === "/survey":
+          const cli = new UserModel (chatID)
+          cliOpros.push(cli)
           await bot.sendMessage(chatID, opros[1], {
             reply_markup: keyboard(0),
           });
@@ -112,11 +121,14 @@ const start = async () => {
             await bot.sendMessage(chatID, opros[2], {
               reply_markup: keyboard(1),
             });
+
             break;
           case "1":
             await bot.sendMessage(chatID, opros[3], {
               reply_markup: keyboard(2),
             });
+            cli.createAnswer(1,1)
+            console.log(cli)
             break;
           case "2":
             await bot.sendMessage(chatID, opros[0], {
@@ -124,6 +136,7 @@ const start = async () => {
                 remove_keyboard: true,
               },
             });
+
             break;
         }
       } catch (error) {
