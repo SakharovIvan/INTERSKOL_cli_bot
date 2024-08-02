@@ -2,7 +2,7 @@ import { token } from "../config.js";
 import TelegramAPI from "node-telegram-bot-api";
 import { getFulldataByTlf, getFulldataBySno } from "../src/SQLgetDATA.js";
 import log from "simple-node-logger";
-import { opros, keyboard,UserModel } from "../src/tgsurvey.js";
+import { opros, keyboard, UserModel } from "../src/tgsurvey.js";
 
 const bot = new TelegramAPI(token, { polling: true });
 const textStart = `Добро пожаловать в телеграм бот ИНТЕРСКОЛ.\nЗдесь Вы можете проверить статус гарантийного ремонта по номеру телефона\nДля того, чтобы найти свой инструмент, введите номер телефона в следующем формате _7 999 999 99 99_`;
@@ -10,6 +10,7 @@ const textMap = `В разработке, можете проверить бли
 const textError_findTool = `Не удалось найти информаицю по Вашему телефону((\nДавайте попробуем поиск по серийному номеру в следующем формате _123.123456_`;
 const textError_findSno = `Мы не нашли Вашего инструмента🥺, но не расстраивайтесь, попробуйте связаться с сервисным центром. Для поиска телефона сервисного центра введите команду /map`;
 const defaultError = `Проверьте корреткность формата 😰`;
+const survey = `Оцените качество обслуживания сервиса ИНТЕРСКОЛ clck.ru/36DVgn 📈 `;
 
 const tlfFormat = /^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$/;
 const sNoFormat = /\d{2,3}\.\d{6}/;
@@ -25,7 +26,7 @@ const logger = log.createSimpleLogger({
   timestampFormat: "YYYY-MM-DD HH:mm:ss.SSS",
 });
 logger.setLevel("info" || "debug");
-const cliOpros = []
+const cliOpros = [];
 
 const sentRepairInfo = async (chatID, result) => {
   let dia =
@@ -45,13 +46,6 @@ const sentRepairInfo = async (chatID, result) => {
     msgoption
   );
 };
-
-const askQuestion =async(chatID)=>{
-  const question = 
-  await bot.sendMessage(chatID, opros[question], {
-    reply_markup: keyboard,
-  });
-}
 
 const start = async () => {
   bot.setMyCommands([
@@ -77,11 +71,7 @@ const start = async () => {
           await bot.sendMessage(chatID, textStart, msgoption);
           break;
         case text === "/survey":
-          const cli = new UserModel (chatID)
-          cliOpros.push(cli)
-          await bot.sendMessage(chatID, opros[1], {
-            reply_markup: keyboard(0),
-          });
+          await bot.sendMessage(chatID, survey, msgoption);
           break;
 
         case tlfFormat.test(text):
@@ -103,7 +93,6 @@ const start = async () => {
             await bot.sendMessage(chatID, textError_findSno, msgoption);
           }
           break;
-
         default:
           await bot.sendMessage(chatID, defaultError, msgoption);
           break;
@@ -112,37 +101,6 @@ const start = async () => {
       logger.info(err);
       console.log(err);
     }
-    bot.on("callback_query", async (answer) => {
-      const chatID = answer.message.chat.id;
-      try {
-        console.log(answer);
-        switch (answer.data) {
-          case "0":
-            await bot.sendMessage(chatID, opros[2], {
-              reply_markup: keyboard(1),
-            });
-
-            break;
-          case "1":
-            await bot.sendMessage(chatID, opros[3], {
-              reply_markup: keyboard(2),
-            });
-            cli.createAnswer(1,1)
-            console.log(cli)
-            break;
-          case "2":
-            await bot.sendMessage(chatID, opros[0], {
-              reply_markup: {
-                remove_keyboard: true,
-              },
-            });
-
-            break;
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    });
   });
 };
 
