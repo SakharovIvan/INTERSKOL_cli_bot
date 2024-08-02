@@ -2,7 +2,6 @@ import { token } from "../config.js";
 import TelegramAPI from "node-telegram-bot-api";
 import { getFulldataByTlf, getFulldataBySno } from "../src/SQLgetDATA.js";
 import log from "simple-node-logger";
-import { opros, keyboard, UserModel } from "../src/tgsurvey.js";
 
 const bot = new TelegramAPI(token, { polling: true });
 const textStart = `Добро пожаловать в телеграм бот ИНТЕРСКОЛ.\nЗдесь Вы можете проверить статус гарантийного ремонта по номеру телефона\nДля того, чтобы найти свой инструмент, введите номер телефона в следующем формате _7 999 999 99 99_`;
@@ -26,7 +25,7 @@ const logger = log.createSimpleLogger({
   timestampFormat: "YYYY-MM-DD HH:mm:ss.SSS",
 });
 logger.setLevel("info" || "debug");
-const cliOpros = [];
+
 
 const sentRepairInfo = async (chatID, result) => {
   let dia =
