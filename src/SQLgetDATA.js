@@ -5,6 +5,7 @@ const normalizeTlf = (tlf) => {
     .replace(/ /g, "")
     .replace(/\+/g, "")
     .replace(/\(/g, "")
+    .replace(/-/g, "")
     .replace(/\)/g, "");
   //console.log(`+7 (${newtlf[1]}${newtlf[2]}${newtlf[3]}) ${newtlf[4]}${newtlf[5]}${newtlf[6]} ${newtlf[7]}${newtlf[8]} ${newtlf[9]}${newtlf[10]}`)
   return `+7 (${newtlf[1]}${newtlf[2]}${newtlf[3]}) ${newtlf[4]}${newtlf[5]}${newtlf[6]} ${newtlf[7]}${newtlf[8]} ${newtlf[9]}${newtlf[10]}`;
