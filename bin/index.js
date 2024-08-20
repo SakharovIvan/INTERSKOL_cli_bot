@@ -1,8 +1,12 @@
 import { token } from "../config.js";
 import TelegramAPI from "node-telegram-bot-api";
-import { getFulldataByTlf, getFulldataBySno } from "../src/SQLgetDATA.js";
+import {
+  getFulldataByTlf,
+  getFulldataBySno,
+  getFullDataBySnoTlf,
+} from "../src/SQLgetDATA.js";
 import log from "simple-node-logger";
-
+import sqlLog from "../src/botlogSQL.js";
 const bot = new TelegramAPI(token, { polling: true });
 const textStart = `Добро пожаловать в телеграм бот ИНТЕРСКОЛ.\nЗдесь Вы можете проверить статус гарантийного ремонта по номеру телефона\nДля того, чтобы найти свой инструмент, введите номер телефона в следующем формате _7 999 999 99 99_`;
 const textMap = `В разработке, можете проверить ближайший асц по ссылке https://www.interskol.ru/centres \nИли отправить инструмент через Service online`;
@@ -25,7 +29,6 @@ const logger = log.createSimpleLogger({
   timestampFormat: "YYYY-MM-DD HH:mm:ss.SSS",
 });
 logger.setLevel("info" || "debug");
-
 
 const sentRepairInfo = async (chatID, result) => {
   let dia =
@@ -58,6 +61,7 @@ const start = async () => {
     const chatID = msg.chat.id;
     const username = msg.from.username;
     const time = msg.date;
+    await sqlLog(chatID, username, text, time);
     try {
       switch (true) {
         case text === "/start":
