@@ -79,11 +79,34 @@ const start = async () => {
 
         case tlfFormat.test(text):
           const fulldata = await getFulldataByTlf(text);
-          if (fulldata.rows.length > 0) {
-            const result = await fulldata.rows[0];
-            await sentRepairInfo(chatID, result);
-          } else {
-            await bot.sendMessage(chatID, textError_findTool, msgoption);
+          switch (true) {
+            case fulldata.rows.length === 0:
+              await bot.sendMessage(chatID, textError_findTool, msgoption);
+              break;
+            case fulldata.rows.length === 1:
+              const result = await fulldata.rows[0];
+              await sentRepairInfo(chatID, result);
+              break;
+            case fulldata.rows.length > 1:
+              const list = fulldata.rows;
+              let listObj = [];
+
+              for (let el of list) {
+                listObj.push([
+                  {
+                    text: `${el.snno_tool} | ${el.matno_tool}`,
+                    callback_data: `${el.snno_tool};${el.cli_telephone}`,
+                  },
+                ]);
+              }
+              await sentRepairInfo(chatID, list[0]);
+              console.log(listObj);
+              await bot.sendMessage(chatID, "Другие ремонты", {
+                reply_markup: {
+                  inline_keyboard: listObj,
+                },
+              });
+              break;
           }
           break;
 
@@ -105,6 +128,16 @@ const start = async () => {
       console.log(err);
     }
   });
+    bot.on("callback_query", async (msg) => {
+   // console.log(msg)
+    const chatID = msg.message.chat.id;
+      const result = await getFullDataBySnoTlf(msg.data.split(";")[0], msg.data.split(";")[1]);
+      console.log(result.rows,msg.data.split(";")[0], msg.data.split(";")[1])
+      await sentRepairInfo(chatID , result.rows[0]);
+      return;
+    });
+
+  return;
 };
 
 start();
