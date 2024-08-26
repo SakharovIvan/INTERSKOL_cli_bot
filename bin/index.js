@@ -95,7 +95,7 @@ const start = async () => {
                 listObj.push([
                   {
                     text: `${el.snno_tool} | ${el.matno_tool}`,
-                    callback_data: `${el.snno_tool};${el.cli_telephone}`,
+                    callback_data: `${el.asc_ndk};${el.asc_kod}`,
                   },
                 ]);
               }
@@ -128,14 +128,17 @@ const start = async () => {
       console.log(err);
     }
   });
-    bot.on("callback_query", async (msg) => {
-   // console.log(msg)
+  bot.on("callback_query", async (msg) => {
+    // console.log(msg)
     const chatID = msg.message.chat.id;
-      const result = await getFullDataBySnoTlf(msg.data.split(";")[0], msg.data.split(";")[1]);
-      console.log(result.rows,msg.data.split(";")[0], msg.data.split(";")[1])
-      await sentRepairInfo(chatID , result.rows[0]);
-      return;
-    });
+    const result = await getFullDataBySnoTlf(
+      msg.data.split(";")[0],
+      msg.data.split(";")[1]
+    );
+    //console.log(result.rows,msg.data.split(";")[0], msg.data.split(";")[1])
+    await sentRepairInfo(chatID, result.rows[0]);
+    return;
+  });
 
   return;
 };

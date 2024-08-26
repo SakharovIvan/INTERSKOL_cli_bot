@@ -12,7 +12,9 @@ const normalizeTlf = (tlf) => {
 
 const normalizeSno = (sno) => {
   console.log(sno);
-  if(sno.length===11){return sno}
+  if (sno.length === 11) {
+    return sno;
+  }
   return sno.length === 10 ? `0${sno}` : `00${sno}`;
 };
 
@@ -34,13 +36,9 @@ const getFulldataBySno = async (sno) => {
 
 const getFullDataBySnoTlf = async (sno, tlf) => {
   const result = await pool.query(
-    `SELECT * FROM gis WHERE snNo_tool='${normalizeSno(
-      sno
-    )}' and cli_telephone = '${normalizeTlf(tlf)}';`
+    `SELECT * FROM gis WHERE asc_ndk=${sno} and asc_kod = ${tlf};`
   );
-  console.log(`SELECT * FROM gis WHERE snNo_tool='${normalizeSno(
-      sno
-    )}' and cli_telephone = '${normalizeTlf(tlf)}';`)
+  console.log(`SELECT * FROM gis WHERE asc_ndk=${sno} and asc_kod = ${tlf};`);
   return result;
 };
 
