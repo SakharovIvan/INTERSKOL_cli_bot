@@ -33,11 +33,11 @@ logger.setLevel("info" || "debug");
 const sentRepairInfo = async (chatID, result) => {
   console.log(result)
   let dia =
-    (result?.date_dia) === ""
+    (result?.date_dia) === undefined
       ? `\nИнструемнт еще не продиагностирован`
       : `\nДата проведения диагностики: ${result.date_dia}`;
   let vip =
-    (result?.date_prin) === ""
+    (result?.date_prin) === undefined
       ? `\nИнструемнт еще в ремонте`
       : `\nДата выполнения ремонта: ${result.date_vipoln}`;
 
