@@ -43,9 +43,9 @@ const sentRepairInfo = async (chatID, result) => {
 
   await bot.sendMessage(
     chatID,
-    `🔫 Ваш инструмент: \nСерийный номер ${result.snno_tool}\nКод машины ${result.matno_tool} \nСервисный центр ${result.asc_name} \nВид ремонта ${result.vr}\n
-⚒️ Статус ремонта: \nДата принято: ${result.date_prin}${dia}${vip}\n
-🧰 Для связи с АСЦ: \nТелефон АСЦ ${result.asc_telephone} \nАдрес АСЦ ${result.asc_adr}`,
+    `🔫 Ваш инструмент: \nСерийный номер ${result?.snno_tool}\nКод машины ${result?.matno_tool} \nСервисный центр ${result?.asc_name} \nВид ремонта ${result?.vr}\n
+⚒️ Статус ремонта: \nДата принято: ${result?.date_prin}${dia}${vip}\n
+🧰 Для связи с АСЦ: \nТелефон АСЦ ${result?.asc_telephone} \nАдрес АСЦ ${result.asc_adr}`,
     msgoption
   );
 };
