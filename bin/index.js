@@ -31,6 +31,7 @@ const logger = log.createSimpleLogger({
 logger.setLevel("info" || "debug");
 
 const sentRepairInfo = async (chatID, result) => {
+  console.log(result)
   let dia =
     (result?.date_dia) === ""
       ? `\nИнструемнт еще не продиагностирован`
