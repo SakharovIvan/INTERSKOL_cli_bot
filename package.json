@@ -17,6 +17,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "start": "node bin/index.js",
     "dev": "nodemon bin/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

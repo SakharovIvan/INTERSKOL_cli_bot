@@ -130,13 +130,11 @@ const start = async () => {
     }
   });
   bot.on("callback_query", async (msg) => {
-    // console.log(msg)
     const chatID = msg.message.chat.id;
     const result = await getFullDataBySnoTlf(
       msg.data.split(";")[0],
       msg.data.split(";")[1]
     );
-    //console.log(result.rows,msg.data.split(";")[0], msg.data.split(";")[1])
     await sentRepairInfo(chatID, result.rows[0]);
     return;
   });
