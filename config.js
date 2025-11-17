@@ -1,12 +1,5 @@
-import pkg from "pg";
-const { Pool } = pkg;
+const token = '6678230536:AAGVmjy45__gdXflUrlNsXbgdxlxU9gJc5g'
+const GIS_SERVICE_URL = 'http://77.105.172.224:1000/gisservice'
 
-const pool = new Pool({
-  user: "root",
-  host: "127.0.0.1",
-  database: "fortest",
-  password: "root",
-  port: "5432",
-});
 
-export { emailConfig, pool };
+export {  token,GIS_SERVICE_URL };
