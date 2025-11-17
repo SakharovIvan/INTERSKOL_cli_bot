@@ -4,6 +4,7 @@ import {
   getFulldataByTool_id,
   getFulldataBySno,
   getFullDataBySnoTlf,
+  SearchForRepairInfo,
 } from "../src/SQLgetDATA.js";
 
 import {
@@ -71,54 +72,28 @@ const start = async () => {
         case text === "/survey":
           await bot.sendMessage(chatID, survey, msgoption);
           break;
-
         case tlfFormat.test(text):
-          const fulldata = await getFulldataByTlf(text);
-          switch (true) {
-            case fulldata.length === 0:
-              await bot.sendMessage(chatID, textError_findTool, msgoption);
-              break;
-            case fulldata.length === 1:
-              const result = await fulldata[0];
-              await sentRepairInfo(chatID, result);
-              break;
-            case fulldata.length > 1:
-              const list = fulldata;
-              let listObj = [];
-
-              for (let el of list) {
-                listObj.push([
-                  {
-                    text: `${el.snno_tool} | ${el.matno_tool}`,
-                    callback_data: `${el.asc_ndk};${el.asc_kod}`,
-                  },
-                ]);
-              }
-              await sentRepairInfo(chatID, list[0]);
-              await bot.sendMessage(chatID, "Другие ремонты", {
-                reply_markup: {
-                  inline_keyboard: listObj,
-                },
-              });
-              break;
+          const answer_tlf = new SearchForRepairInfo({ cli_tlf: text });
+          await answer_tlf.init();
+          await answer_tlf.createMessage();
+          if (answer_tlf.msg.length === 1 || answer_tlf.msg.length === 0) {
+            await bot.sendMessage(chatID, answer_tlf.msg.text);
           }
+
           break;
-
         case sNoFormat.test(text):
-          const fulldataSno = await getFulldataBySno(text);
-          if ((fulldataSno.length = 1)) {
-            const current_tool = await getFulldataByTlf(fulldataSno[0].tool_id)
-            await sentRepairInfo(chatID, {...fulldataSno[0],...current_tool});
-            break;
+          const answer = new SearchForRepairInfo({ snno_tool: text });
+          await answer.init();
+          await answer.createMessage();
+          if (answer.msg.length === 1 || answer.msg.length === 0) {
+            await bot.sendMessage(chatID, answer.msg.text);
           }
-          if (fulldataSno.length > 1) {
-            break;
-          } else {
-            await bot.sendMessage(chatID, textError_findSno, msgoption);
+          if(answer.msg.length === 2){
+            await bot.sendMessage(chatID,'Выберите один из ремонтов', answer.msg.options)
           }
           break;
         default:
-          await bot.sendMessage(chatID, defaultError, msgoption);
+          await bot.sendMessage(chatID, defaultError);
           break;
       }
     } catch (err) {
@@ -133,6 +108,15 @@ const start = async () => {
       msg.data.split(";")[1]
     );
     await sentRepairInfo(chatID, result[0]);
+    const answer = new SearchForRepairInfo({
+      gis_code: result[1],
+      asc_ndk: result[0],
+    });
+    await answer.init();
+    await answer.createMessage();
+    if (answer.msg.length === 1 || answer.msg.length === 0) {
+      await bot.sendMessage(chatID, answer.msg.text);
+    }
     return;
   });
 

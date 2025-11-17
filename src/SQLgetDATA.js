@@ -1,4 +1,5 @@
 import { GIS_SERVICE_URL } from "../config.js";
+import { textError_findSno, textError_findTool } from "./messages.js";
 const normalizeTlf = (tlf) => {
   const newtlf = tlf
     .replace(/ /g, "")
@@ -19,51 +20,78 @@ const normalizeSno = (sno) => {
 export class SearchForRepairInfo {
   constructor(data = { snno_tool, cli_tlf, gis_code, asc_ndk }) {
     this.data = data;
+    this.msg = { text: "", length: 0 };
   }
   async init() {
-    switch (this.data) {
-      case snno_tool:
-        const param_snno_tool = new URLSearchParams({ snno_tool });
-        this.repairList = await fetch(
-          `${GIS_SERVICE_URL}?${param_snno_tool.toString()}`,
-          {
-            method: "GET",
-          }
-        );
-        break;
-      case cli_tlf:
-        const param_cli_tlf = new URLSearchParams({ cli_telephone: cli_tlf });
-        this.repairList = await fetch(
-          `${GIS_SERVICE_URL}?${param_cli_tlf.toString()}`,
-          {
-            method: "GET",
-          }
-        );
-        break;
+    if (this.data.snno_tool) {
+      const param = new URLSearchParams({
+        snno_tool: this.data.snno_tool,
+      });
+      const res = await fetch(`${GIS_SERVICE_URL}?${param.toString()}`, {
+        method: "GET",
+      });
+      this.repairList = await res.json();
+      return;
     }
-    await this.createMessage();
+    if (this.data.cli_tlf) {
+      const param = new URLSearchParams({
+        cli_telephone: this.data.cli_tlf.replace(/\s+/g, ""),
+      });
+      const result = await fetch(`${GIS_SERVICE_URL}?${param.toString()}`, {
+        method: "GET",
+      });
+      this.repairList = await res.json();
+      return;
+    }
+    if (this.data.gis_code && this.data.asc_ndk) {
+      const param = new URLSearchParams({ gis_code, asc_ndk });
+      const result = await fetch(`${GIS_SERVICE_URL}?${param.toString()}`, {
+        method: "GET",
+      });
+      this.repairList = await result.json();
+      return search;
+    }
   }
 
   async createMessage() {
-    if ((this.repairList = 0)) {
+    console.log("create message ", this.repairList[0]);
+    if (this.repairList.length === 0 || this.repairList[0] === undefined) {
+      if (this.data.cli_tlf) {
+        this.msg.text = textError_findTool;
+      }
+      if (this.data.snno_tool) {
+        this.msg.text = textError_findSno;
+      }
+      this.msg.length = 0;
+
+      return;
     }
-    if ((this.repairList = 1)) {
+    if (this.repairList.length === 1) {
+      await this.getToolInfo();
+      await this.getASCInfo();
+      const result = { ...this.repairList[0], ...this.tool, ...this.asc };
+      console.log(result);
       let dia =
-        result?.dia === null
+        result.dia === null
           ? `\nИнструемнт еще не продиагностирован`
           : `\nДата проведения диагностики: ${result.dia}`;
       let vip =
-        result?.vipoln === null
+        result.vipoln === null
           ? `\nИнструемнт еще в ремонте`
           : `\nДата выполнения ремонта: ${result.vipoln}`;
-
+      let status = result.vipoln
+        ? " Ремонт выполнен ✅"
+        : "Инструмент находится в сервисе ❌";
       this.msg = {};
-      this.msg.text = `🔫 Ваш инструмент: \nСерийный номер ${result?.snno_tool}\nКод машины ${result?.matno_tool} \nСервисный центр ${result?.asc_name} \nВид ремонта ${result?.vr}\n
-⚒️ Статус ремонта: \nДата принято: ${result?.prin}${dia}${vip}\n
-🧰 Для связи с АСЦ: \nТелефон АСЦ ${result?.asc_telephone} \nАдрес АСЦ ${result?.asc_adr}`;
+      this.msg.length = 1;
+      this.msg.text = `🔫 Ваш инструмент: \nСерийный номер ${result?.snno_tool}\nКод машины ${result?.matno_tool} \nСервисный центр ${result?.organization_name} \nВид ремонта: ${result?.vr}\n
+⚒️ Статус ремонта:${status} 
+\nДата принято: ${result?.prin}${dia}${vip}\n`;
+      //🧰 Для связи с АСЦ: \nТелефон АСЦ ${result?.asc_telephone} \nАдрес АСЦ ${result?.asc_adr}
+      return;
     }
 
-    if (this.repairList > 1) {
+    if (this.repairList.length > 1) {
       let listObj = [];
       for (let el of this.repairList) {
         listObj.push([
@@ -73,11 +101,18 @@ export class SearchForRepairInfo {
           },
         ]);
       }
+      this.msg.length = 2;
+      this.msg.options=listObj
     }
   }
 
-  async getASCInfo(){
-    
+  async getASCInfo(asc_id = this.repairList[0].asc_id) {
+    const param = new URLSearchParams({ asc_id });
+    const result = await fetch(`${GIS_SERVICE_URL}/asc?${param.toString()}`, {
+      method: "GET",
+    });
+    const search = await result.json();
+    this.asc = search;
   }
 
   async getToolInfo(tool_id = this.repairList[0].tool_id) {
