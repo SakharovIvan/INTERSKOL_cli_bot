@@ -11,7 +11,6 @@ const normalizeTlf = (tlf) => {
 };
 
 const normalizeSno = (sno) => {
-  console.log(sno);
   if (sno.length === 11) {
     return sno;
   }
@@ -40,21 +39,20 @@ export class SearchForRepairInfo {
       const result = await fetch(`${GIS_SERVICE_URL}?${param.toString()}`, {
         method: "GET",
       });
-      this.repairList = await res.json();
+      this.repairList = await result.json();
       return;
     }
     if (this.data.gis_code && this.data.asc_ndk) {
-      const param = new URLSearchParams({ gis_code, asc_ndk });
+      const param = new URLSearchParams({ gis_code:this.data.gis_code, asc_ndk:this.data.asc_ndk });
       const result = await fetch(`${GIS_SERVICE_URL}?${param.toString()}`, {
         method: "GET",
       });
       this.repairList = await result.json();
-      return search;
+      return ;
     }
   }
 
   async createMessage() {
-    console.log("create message ", this.repairList[0]);
     if (this.repairList.length === 0 || this.repairList[0] === undefined) {
       if (this.data.cli_tlf) {
         this.msg.text = textError_findTool;
@@ -70,7 +68,6 @@ export class SearchForRepairInfo {
       await this.getToolInfo();
       await this.getASCInfo();
       const result = { ...this.repairList[0], ...this.tool, ...this.asc };
-      console.log(result);
       let dia =
         result.dia === null
           ? `\nИнструемнт еще не продиагностирован`
@@ -93,11 +90,17 @@ export class SearchForRepairInfo {
 
     if (this.repairList.length > 1) {
       let listObj = [];
-      for (let el of this.repairList) {
+      const asc_promise = this.repairList.map(async (el)=>{
+        const tool =await this.getToolInfo(el.tool_id)
+        const asc = await this.getASCInfo(el.asc_id) 
+        return {...el,...asc,...tool}
+      })
+     const repair_list_with_asc = await Promise.all(asc_promise)
+      for (let el of repair_list_with_asc) {
         listObj.push([
           {
             text: `${el.snno_tool} | ${el.matno_tool}`,
-            callback_data: `${el.asc_ndk};${el.asc_kod}`,
+            callback_data: `${el.ndk};${el.gis_code}`,
           },
         ]);
       }
@@ -113,6 +116,7 @@ export class SearchForRepairInfo {
     });
     const search = await result.json();
     this.asc = search;
+    return search
   }
 
   async getToolInfo(tool_id = this.repairList[0].tool_id) {
@@ -122,45 +126,7 @@ export class SearchForRepairInfo {
     });
     const search = await result.json();
     this.tool = search;
+    return search
   }
 }
 
-const getFulldataByTool_id = async (tool_id) => {
-  const param = new URLSearchParams({ tool_id });
-  const result = await fetch(`${GIS_SERVICE_URL}/tool?${param.toString()}`, {
-    method: "GET",
-  });
-  console.log(tool_id, result);
-  if (result.status === 404) {
-    return new Error();
-  }
-  const search = await result.json();
-  console.log(search);
-  return search;
-};
-
-const getFulldataBySno = async (sno) => {
-  const param = new URLSearchParams({ snno_tool: sno });
-  const result = await fetch(`${GIS_SERVICE_URL}?${param.toString()}`, {
-    method: "GET",
-  });
-  if (result.status === 404) {
-    return new Error();
-  }
-  const search = await result.json();
-  return search;
-};
-
-const getFullDataBySnoTlf = async (gis_code, asc_ndk) => {
-  const param = new URLSearchParams({ gis_code, asc_ndk });
-  const result = await fetch(`${GIS_SERVICE_URL}?${param.toString()}`, {
-    method: "GET",
-  });
-  if (result.status === 404) {
-    return new Error();
-  }
-  const search = await result.json();
-  return search;
-};
-
-export { getFulldataByTool_id, getFulldataBySno, getFullDataBySnoTlf };

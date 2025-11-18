@@ -1,17 +1,13 @@
 import { token } from "../config.js";
 import TelegramAPI from "node-telegram-bot-api";
 import {
-  getFulldataByTool_id,
-  getFulldataBySno,
-  getFullDataBySnoTlf,
+  
   SearchForRepairInfo,
 } from "../src/SQLgetDATA.js";
 
 import {
   textStart,
   textMap,
-  textError_findTool,
-  textError_findSno,
   defaultError,
   survey,
 } from "../src/messages.js";
@@ -79,6 +75,11 @@ const start = async () => {
           if (answer_tlf.msg.length === 1 || answer_tlf.msg.length === 0) {
             await bot.sendMessage(chatID, answer_tlf.msg.text);
           }
+                    if(answer_tlf.msg.length === 2){
+            await bot.sendMessage(chatID,'Выберите один из ремонтов', {
+        reply_markup: {
+            inline_keyboard: answer_tlf.msg.options}})
+          }
 
           break;
         case sNoFormat.test(text):
@@ -89,7 +90,11 @@ const start = async () => {
             await bot.sendMessage(chatID, answer.msg.text);
           }
           if(answer.msg.length === 2){
-            await bot.sendMessage(chatID,'Выберите один из ремонтов', answer.msg.options)
+            await bot.sendMessage(chatID,'Выберите один из ремонтов', {
+
+        reply_markup: {
+
+            inline_keyboard: answer.msg.options}})
           }
           break;
         default:
@@ -103,14 +108,10 @@ const start = async () => {
 
   bot.on("callback_query", async (msg) => {
     const chatID = msg.message.chat.id;
-    const result = await getFullDataBySnoTlf(
-      msg.data.split(";")[0],
-      msg.data.split(";")[1]
-    );
-    await sentRepairInfo(chatID, result[0]);
+
     const answer = new SearchForRepairInfo({
-      gis_code: result[1],
-      asc_ndk: result[0],
+      gis_code: msg.data.split(";")[1],
+      asc_ndk: msg.data.split(";")[0],
     });
     await answer.init();
     await answer.createMessage();
