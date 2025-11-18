@@ -24,7 +24,7 @@ export class SearchForRepairInfo {
   async init() {
     if (this.data.snno_tool) {
       const param = new URLSearchParams({
-        snno_tool: this.data.snno_tool,
+        snno_tool: normalizeSno(this.data.snno_tool),
       });
       const res = await fetch(`${GIS_SERVICE_URL}?${param.toString()}`, {
         method: "GET",
